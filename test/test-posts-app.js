@@ -5,20 +5,13 @@ const mongoose = require('mongoose');
 
 const should = chai.should();
 
-const {blogPost} = require('../models');
+const {BlogPost} = require('../models');
 
 const {runServer, app, closeServer} = require('../server');
 const {TEST_DATABASE_URL} = require('../config');
 
 chai.use(chaiHttp);
 
-/*author: {
-    firstName: String,
-    lastName: String
-  },
-  title: {type: String, required: true},
-  content: {type: String},
-  created: {type: Date, default: Date.now}*/
 
 function seedPostsData() {
 	console.log('Seeding Posts Database Info');
@@ -26,7 +19,7 @@ function seedPostsData() {
 	for (let i=0; i<=10; i++) {
 		seedData.push(createPostsData());
 	}
-	return blogPost.insertMany(seedData);
+	return BlogPost.insertMany(seedData);
 
 }
 
@@ -44,17 +37,17 @@ function generateLoremIpsem() {
 function generateRandomDate() {
 	const randomDates = ["10/19/17", "04/08/99", "11/12/11", 
 	"09/30/86", "12/15/01", "01/27/88"];
-	let date = randomDates[math.floor(math.random() * 
+	let date = randomDates[Math.floor(Math.random() * 
 		randomDates.length)]
 }
 
 function createPostsData () {
 	return {
 		author: {
-	    	firstName: faker.author.firstName(),
-	    	lastName: faker.author.lastName()
+	    	firstName: "faker.author.firstName()",
+	    	lastName: "faker.author.lastName()"
   	},
-  		title: faker.title(),
+  		title: "faker.title()",
   		content: generateLoremIpsem(),
   		created: generateRandomDate()
 	}
@@ -62,7 +55,7 @@ function createPostsData () {
 
 function dropDatabase() {
 	console.log('Destoying database for reset!')
-	return mongoose.collection.db.dropDatabase();
+	return mongoose.connection.dropDatabase();
 }
 
 describe('Posts API resource', function() {
@@ -75,7 +68,7 @@ describe('Posts API resource', function() {
 	});
 
 	after(function() {
-		return closerServer();
+		return closeServer();
 	});
 
 	beforeEach(function() {
@@ -84,6 +77,24 @@ describe('Posts API resource', function() {
 
 	afterEach(function() {
 		return dropDatabase();
+	})
+
+	describe('GET endpoint', function() {
+
+		it('should return all of the 10 objects in the database', function() {
+			let res;
+			return chai.request(app)
+			.get('/posts')
+			.then(function(_res) {
+				res = _res;
+				res.should.have.status(200);
+				res.body.should.have.length.of.at.least(1);
+				return BlogPost.count();
+			})
+			.then(function(count) {
+				res.body.should.have.length.of.at.least(count);
+			});
+		});
 	});
 
-}
+});
