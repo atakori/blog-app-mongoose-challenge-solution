@@ -59,3 +59,31 @@ function createPostsData () {
   		created: generateRandomDate()
 	}
 }
+
+function dropDatabase() {
+	console.log('Destoying database for reset!')
+	return mongoose.collection.db.dropDatabase();
+}
+
+describe('Posts API resource', function() {
+	//runServer before each ALL tests
+	//need to create new database before each test
+	//need to tear down each database after each new test
+	//closeServer before ALL tests
+	before(function() {
+		return runServer(TEST_DATABASE_URL);
+	});
+
+	after(function() {
+		return closerServer();
+	});
+
+	beforeEach(function() {
+		return seedPostsData();
+	});
+
+	afterEach(function() {
+		return dropDatabase();
+	});
+
+}
