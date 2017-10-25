@@ -147,6 +147,62 @@ describe('Posts API resource', function() {
 				});
 			});
 		});
-	})
+	});
+
+	describe('PUT endpoint', function() {
+		//make a get request and grab the first id
+		//make a put request
+		//try to send json with speciic information to change
+		//call specific id and check if res object has new
+		//content info
+		it('should update the field values of a specific post', function() {
+			const updateData = {
+				title: "New Post title here",
+				content: "Not standard Lorem Ipsum text here"
+			}
+			return BlogPost
+			.findOne()
+			.then(function(post) {
+				updateData.id = post.id;
+
+				return chai.request(app)
+				.put(`/posts/${post.id}`)
+				.send(updateData);
+				})
+				.then(function (res) {
+					res.should.have.status(204);
+					return BlogPost.findById(updateData.id)
+				})
+				.then(function(post) {
+					post.title.should.be.equal(updateData.title);
+					post.content.should.be.equal(updateData.content)
+				});
+		});
+	});
+	describe('DELETE endpoint', function() {
+		//choose a random object and get id
+		//make a delete request
+		//check for correct status and return id
+		//check BlogPost database to make sure it is not there
+		it('should delete a specific post from the db', function() {
+			let randomId;
+			/*let post;*/
+
+			return BlogPost
+			.findOne()
+			.then(function (post) {
+				randomId = post.id;
+				return chai.request(app)
+				.delete(`/posts/${randomId}`)
+				.then(function(res) {
+					res.should.have.status(204);
+					return BlogPost.findById(randomId)
+				})
+				.then(function(post) {
+					should.not.exist(post);
+				});
+			});
+		});
+	});
 
 });
