@@ -95,6 +95,58 @@ describe('Posts API resource', function() {
 				res.body.should.have.length.of.at.least(count);
 			});
 		});
+
+		let resPost;
+		it('should have all the proper keys', function() {
+			return chai.request(app)
+			.get('/posts')
+			.then(function(res) {
+				res.should.have.status(200);
+				res.should.be.json;
+				res.body.should.have.length.of.at.least(1);
+				res.body.forEach(function(post) {
+					post.should.be.a('object');
+					post.should.include.keys(
+						'author', 'title', 'content', 'created');				
+				});
+				resPost = res.body[0];
+				return BlogPost.findById(resPost.id);
+			})
+			.then(function(post) {
+				resPost.id.should.equal(post.id);
+				resPost.author.should.contain(post.author.firstName);
+				resPost.content.should.equal(post.content);
+				resPost.title.should.equal(post.title);
+			});
+		});
 	});
+
+	describe('POST endpoint', function() {
+		//make a POST request
+		//check that the restaurant has the right keys
+		//check the id is there too
+
+		it('should add a post to the db', function() {
+			let newPost = createPostsData();
+
+			return chai.request(app)
+			.post('/posts')
+			.send(newPost)
+			.then(function(res) {
+				res.should.have.status(201);
+				res.should.be.json;
+				res.body.should.include.keys(
+					'author', 'title', 'content', 'created');
+				res.body.id.should.not.be.null;
+				return BlogPost.findById(res.body.id)
+				.then(function(post) {
+					post.author.firstName.should.equal(newPost.author.firstName);
+					post.author.lastName.should.equal(newPost.author.lastName);
+					post.content.should.equal(newPost.content);
+					post.title.should.equal(newPost.title);
+				});
+			});
+		});
+	})
 
 });
